@@ -3,21 +3,22 @@ unit uModel.Produto;
 interface
 
 uses
-  System.SysUtils;
+  System.SysUtils,
+  uModel.Attributes;
 
 type
   [Tabela('produtos')]
-  [Coluna('codigo', true, true, false)]
-  [Coluna('descricao')]
-  [Coluna('preco_venda')]
   TProduto = class
   private
     Fcodigo: Integer;
     Fdescricao: String;
     FprecoVenda: Currency;
   published
+    [Coluna('codigo', true, true, false)]
     property codigo: Integer read Fcodigo write Fcodigo;
+    [Coluna('descricao')]
     property descricao: String read Fdescricao write Fdescricao;
+    [Coluna('preco_venda')]
     property preco_venda: Currency read FprecoVenda write FprecoVenda;
   end;
 

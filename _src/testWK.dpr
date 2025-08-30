@@ -6,7 +6,9 @@ uses
   uModel.Cliente in 'Model\uModel.Cliente.pas',
   uModel.Produto in 'Model\uModel.Produto.pas',
   uModel.Pedido in 'Model\uModel.Pedido.pas',
-  uModel.PedidoProduto in 'Model\uModel.PedidoProduto.pas';
+  uModel.PedidoProduto in 'Model\uModel.PedidoProduto.pas',
+  uModel.Attributes in 'Model\uModel.Attributes.pas',
+  uDAO.Base in 'Model\uDAO.Base.pas';
 
 {$R *.res}
 

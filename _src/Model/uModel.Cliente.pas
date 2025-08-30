@@ -3,14 +3,11 @@ unit uModel.Cliente;
 interface
 
 uses
-  System.SysUtils;
+  System.SysUtils,
+  uModel.Attributes;
 
 type
   [Tabela('clientes')]
-  [Coluna('codigo', true, true, false)]
-  [Coluna('nome')]
-  [Coluna('cidade')]
-  [Coluna('uf')]
   TCliente = class
   private
     Fcodigo: Integer;
@@ -18,9 +15,13 @@ type
     Fcidade: String;
     Fuf: String;
   published
+    [Coluna('codigo', true, true, false)]
     property codigo: Integer read Fcodigo write Fcodigo;
+    [Coluna('nome')]
     property nome: String read Fnome write Fnome;
+    [Coluna('cidade')]
     property cidade: String read Fcidade write Fcidade;
+    [Coluna('uf')]
     property uf: String read Fuf write Fuf;
   end;
 
