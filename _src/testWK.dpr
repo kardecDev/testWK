@@ -8,7 +8,8 @@ uses
   uModel.Pedido in 'Model\uModel.Pedido.pas',
   uModel.PedidoProduto in 'Model\uModel.PedidoProduto.pas',
   uModel.Attributes in 'Model\uModel.Attributes.pas',
-  uDAO.Base in 'Model\uDAO.Base.pas';
+  uDAO.Base in 'Model\uDAO.Base.pas',
+  uService.Pedido in 'service\uService.Pedido.pas';
 
 {$R *.res}
 
