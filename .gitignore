@@ -1,0 +1,45 @@
+# Arquivos compilados do Delphi
+*.dcu
+*.exe
+*.bpl
+*.obj
+*.tds
+
+# Arquivos de projecto
+*.dproj.local
+*.dproj
+*.dpk
+*.res
+*.cfg
+*.dsk
+*.bak
+*.tmp
+*.d~
+*.~
+*.ncb
+*.suo
+*.~?~
+
+# Outros arquivos gerados pelo ambiente de desenvolvimento ou que devem ser ignorados
+bin/
+debug/
+release/
+project/
+__history/
+__recovery/
+license.txt
+*.identcache
+*.lock
+
+# Ficheiros gerados por plugins e ferramentas de terceiros
+*.toobak
+*.tovb
+
+# Ficheiros de logs
+*.log
+
+# Ficheiros temporários de texto
+*.txt
+
+# Ficheiros de licenciamento
+*license.dat
