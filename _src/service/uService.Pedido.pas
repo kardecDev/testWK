@@ -10,7 +10,8 @@ uses
   uModel.Pedido,
   uModel.PedidoProduto,
   uModel.Cliente,
-  uModel.Produto;
+  uModel.Produto,
+  uDBConnection;
 
 type
   TPedidoService = class
@@ -19,7 +20,7 @@ type
     FDaoPedido: TBaseDAO<TPedido>;
     FDaoPedidoProduto: TBaseDAO<TPedidoProduto>;
   public
-    constructor Create(aConnection: TFDConnection);
+    constructor Create(aDBConnection: TDBConnection);
     destructor Destroy; override;
 
     function Salvar(aPedido: TPedido; aItens: TObjectList<TPedidoProduto>): Boolean;
@@ -32,10 +33,10 @@ implementation
 
 { TPedidoService }
 
-constructor TPedidoService.Create(aConnection: TFDConnection);
+constructor TPedidoService.Create(aDBConnection: TDBConnection);
 begin
   inherited Create;
-  FConnection := aConnection;
+  FConnection := aDBConnection.GetConnection;
   FDaoPedido := TBaseDAO<TPedido>.Create(FConnection);
   FDaoPedidoProduto := TBaseDAO<TPedidoProduto>.Create(FConnection);
 end;

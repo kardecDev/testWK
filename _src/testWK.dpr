@@ -9,7 +9,9 @@ uses
   uModel.PedidoProduto in 'Model\uModel.PedidoProduto.pas',
   uModel.Attributes in 'Model\uModel.Attributes.pas',
   uDAO.Base in 'Model\uDAO.Base.pas',
-  uService.Pedido in 'service\uService.Pedido.pas';
+  uService.Pedido in 'service\uService.Pedido.pas',
+  uController.Pedido in 'Controller\uController.Pedido.pas',
+  uDBConnection in 'uDBConnection.pas';
 
 {$R *.res}
 
