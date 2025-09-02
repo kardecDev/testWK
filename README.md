@@ -10,6 +10,7 @@ A arquitetura do projeto é dividida em camadas lógicas, onde cada camada possu
 
 ### 2.1. Diagrama de Camadas
 Aqui está um diagrama que ilustra a interação entre as principais camadas da aplicação:
+```mermaid
 graph TD
     A[View: Formulários e Grids] --> B[Controller: Lógica de UI e Orquestração]
     B --> C[Service: Regras de Negócio e Transações]
@@ -18,3 +19,4 @@ graph TD
     D -- Retorna Objetos de Domínio --> C
     C -- Retorna Objetos de Domínio --> B
     B -- Manipula Objetos de Domínio/Datasets --> A
+```
