@@ -7,6 +7,7 @@ uses
   System.Generics.Collections,
   FireDAC.Comp.Client,
   uDAO.Base,
+  uDAO.Pedido,
   uModel.Pedido,
   uModel.PedidoProduto,
   uModel.Cliente,
@@ -19,32 +20,36 @@ type
     FConnection: TFDConnection;
     FDaoPedido: TBaseDAO<TPedido>;
     FDaoPedidoProduto: TBaseDAO<TPedidoProduto>;
+    FDaoPedidoEspecializado: TPedidoDAO;
   public
-    constructor Create(aDBConnection: TDBConnection);
+    constructor Create;
     destructor Destroy; override;
 
     function Salvar(aPedido: TPedido; aItens: TObjectList<TPedidoProduto>): Boolean;
-    function CarregarPorId(const aId: Integer): TObjectList<TObject>;
-    function Excluir(const aId: Integer): Boolean;
+    function Excluir(const aNumero_Pedido: Integer): Boolean;
     function CalcularValorTotal(aItens: TObjectList<TPedidoProduto>): Currency;
+    function CarregarPedidoPorNumeroPedido(const aNumero_Pedido: Integer): TPedido;
+    function CarregarItensDoPedido(const aNumero_Pedido: Integer): TObjectList<TPedidoProduto>;
   end;
 
 implementation
 
 { TPedidoService }
 
-constructor TPedidoService.Create(aDBConnection: TDBConnection);
+constructor TPedidoService.Create;
 begin
   inherited Create;
-  FConnection := aDBConnection.GetConnection;
+  FConnection := TDBConnection.GetConnection;
   FDaoPedido := TBaseDAO<TPedido>.Create(FConnection);
   FDaoPedidoProduto := TBaseDAO<TPedidoProduto>.Create(FConnection);
+  FDaoPedidoEspecializado := TPedidoDAO.Create(FConnection);
 end;
 
 destructor TPedidoService.Destroy;
 begin
   FDaoPedido.Free;
   FDaoPedidoProduto.Free;
+  FDaoPedidoEspecializado.Free;
   inherited Destroy;
 end;
 
@@ -70,10 +75,11 @@ begin
     else
       FDaoPedido.Update(aPedido);
 
-    // Apaga os itens antigos para evitar duplicidade
-    FDaoPedidoProduto.Delete(aPedido.numero_pedido); // Este método precisa ser ajustado para excluir por ID do pedido
+    // Apaga os itens antigos usando o DAO especializado
+    if aPedido.numero_pedido > 0 then
+       FDaoPedidoEspecializado.ExcluirItensPedido(aPedido.numero_pedido);
 
-    // Insere os novos itens com a chave estrangeira correta
+    // Insere os novos itens
     for LItem in aItens do
     begin
       LItem.numero_pedido := aPedido.numero_pedido;
@@ -88,69 +94,27 @@ begin
   end;
 end;
 
-function TPedidoService.CarregarPorId(const aId: Integer): TObjectList<TObject>;
-var
-  LPedido: TPedido;
-  LQuery: TFDQuery;
-  LItem: TPedidoProduto;
+function TPedidoService.CarregarItensDoPedido(
+  const aNumero_Pedido: Integer): TObjectList<TPedidoProduto>;
 begin
-  Result := TObjectList<TObject>.Create;
-  try
-    LPedido := FDaoPedido.FindById(aId);
-    if Assigned(LPedido) then
-    begin
-      Result.Add(LPedido);
-
-      LQuery := TFDQuery.Create(nil);
-      try
-        LQuery.Connection := FConnection;
-        LQuery.SQL.Text := 'SELECT * FROM pedido_produtos WHERE numero_pedido = :id';
-        LQuery.ParamByName('id').AsInteger := aId;
-        LQuery.Open;
-
-        while not LQuery.EOF do
-        begin
-          LItem := TPedidoProduto.Create;
-          LItem.id_produto      := LQuery.FieldByName('id_produto').AsInteger;
-          LItem.numero_pedido   := LQuery.FieldByName('numero_pedido').AsInteger;
-          LItem.codigo_produto  := LQuery.FieldByName('codigo_produto').AsInteger;
-          LItem.quantidade      := LQuery.FieldByName('quantidade').AsCurrency;
-          LItem.vlr_unitario    := LQuery.FieldByName('vlr_unitario').AsCurrency;
-          LItem.vlr_total        := LQuery.FieldByName('vlr_total').AsCurrency;
-          Result.Add(LItem);
-          LQuery.Next;
-        end;
-      finally
-        LQuery.Free;
-      end;
-    end;
-  except
-    Result.Free;
-    Result := nil;
-  end;
+  // A responsabilidade do Service é orquestrar.
+  // Ele chama o DAO para buscar os dados e os retorna para o Controller.
+  Result := FDaoPedidoEspecializado.CarregarItensDoPedido(aNumero_Pedido);
 end;
 
-function TPedidoService.Excluir(const aId: Integer): Boolean;
-var
-  LCommand: TFDCommand;
+function TPedidoService.CarregarPedidoPorNumeroPedido(const aNumero_Pedido: Integer): TPedido;
+begin
+  // Delega a responsabilidade para o DAO especializado
+ Result := FDaoPedidoEspecializado.CarregarPedidoPorNumeroPedido(aNumero_Pedido);
+end;
+
+function TPedidoService.Excluir(const aNumero_Pedido: Integer): Boolean;
 begin
   FConnection.StartTransaction;
   try
-    LCommand := TFDCommand.Create(nil);
-    try
-      LCommand.Connection := FConnection;
-      // Apaga os itens do pedido
-      LCommand.CommandText.Text := 'DELETE FROM pedido_produtos WHERE numero_pedido = :id';
-      LCommand.ParamByName('id').AsInteger := aId;
-      LCommand.Execute;
-
-      // Apaga o cabeçalho do pedido
-      LCommand.CommandText.Text := 'DELETE FROM PEDIDOS WHERE ID_PEDIDO = :id';
-      LCommand.ParamByName('id').AsInteger := aId;
-      LCommand.Execute;
-    finally
-      LCommand.Free;
-    end;
+    // Delega a exclusão para o DAO especializado
+    FDaoPedidoEspecializado.ExcluirItensPedido(aNumero_Pedido);
+    FDaoPedidoEspecializado.ExcluirPedido(aNumero_Pedido);
     FConnection.Commit;
     Result := True;
   except

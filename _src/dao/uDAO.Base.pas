@@ -15,6 +15,7 @@ uses
   System.Classes,
   FireDAC.Stan.Param;
 
+
 type
   TBaseDAO<T: class, constructor> = class
   private
@@ -26,7 +27,7 @@ type
     function GetTableName: string;
     procedure GetPrimaryInfo;
     function BuildInsertSQL: string;
-    function BuildUpdateSQL: string;
+    function BuildUpdateSQL(const aObject: T): string;
     procedure SetPropertyFromField(const aField: TField; const aProp: TRttiProperty; const aObject: TObject);
   public
     constructor Create(aConnection: TFDConnection);
@@ -37,9 +38,14 @@ type
     function Delete(const aId: Integer): Boolean;
     function FindById(const aId: Integer): T;
     function FindAll: TObjectList<T>;
+    function FindAllAsDataSet: TDataSet;
+
   end;
 
 implementation
+
+uses
+  FireDAC.Comp.DataSet;
 
 { TBaseDAO<T> }
 
@@ -167,36 +173,63 @@ begin
   end;
 end;
 
-function TBaseDAO<T>.BuildUpdateSQL: string;
+function TBaseDAO<T>.BuildUpdateSQL(const aObject: T): string;
 var
+  LSQL: string;
   LContext: TRttiContext;
   LType: TRttiType;
-  LProp: TRttiProperty;
   LAttr: TCustomAttribute;
-  LFields: TStringList;
+  LProp: TRttiProperty;
+  LTableName: string;
+  LSetClause: string;
+  LWhereClause: string;
 begin
-  LFields := TStringList.Create;
+  LContext := TRttiContext.Create;
   try
-    LContext := TRttiContext.Create;
     LType := LContext.GetType(T.ClassInfo);
+
+    // 1. Obtém o nome da tabela do TabelaAttribute
+    for LAttr in LType.GetAttributes do
+      if LAttr is TabelaAttribute then
+      begin
+        LTableName := (LAttr as TabelaAttribute).nome;
+        break; // Sai do laço após encontrar o atributo
+      end;
+
+    // 2. Fallback: Se não encontrar o atributo, usa a regra de pluralização
+    if LTableName = '' then
+      LTableName := LType.Name.Replace('T', '', [rfIgnoreCase, rfReplaceAll]) + 's';
+
+    LSetClause := '';
+    LWhereClause := '';
+
+    // 3. Constrói as cláusulas SET e WHERE
     for LProp in LType.GetProperties do
     begin
       for LAttr in LProp.GetAttributes do
       begin
-        if (LAttr is ColunaAttribute) and not (LAttr as ColunaAttribute).IsReadOnly and not (LAttr as ColunaAttribute).IsPrimaryKey then
+        if LAttr is ColunaAttribute then
         begin
-          LFields.Add(Format('%s = :%s', [(LAttr as ColunaAttribute).nome, (LAttr as ColunaAttribute).nome]));
+          if (LAttr as ColunaAttribute).IsPrimaryKey then
+          begin
+            LWhereClause := Format('%s = :%s', [(LAttr as ColunaAttribute).nome, (LAttr as ColunaAttribute).nome]);
+          end
+          else if not (LAttr as ColunaAttribute).IsReadOnly and not (LAttr as ColunaAttribute).IsAutoIncrement then
+          begin
+            if LSetClause <> '' then
+              LSetClause := LSetClause + ', ';
+            LSetClause := LSetClause + Format('%s = :%s', [(LAttr as ColunaAttribute).nome, (LAttr as ColunaAttribute).nome]);
+          end;
         end;
       end;
     end;
 
-    Result := Format('UPDATE %s SET %s WHERE %s = :%s', [FTableName, LFields.CommaText, FPrimaryKeyName, FPrimaryKeyName]);
+    // 4. Constrói e retorna a string SQL final
+    Result := Format('UPDATE %s SET %s WHERE %s', [LTableName, LSetClause, LWhereClause]);
   finally
-    LFields.Free;
     LContext.Free;
   end;
 end;
-
 function TBaseDAO<T>.Insert(const aObject: T): Boolean;
 var
   LSQL: string;
@@ -261,6 +294,7 @@ begin
   end;
 end;
 
+
 function TBaseDAO<T>.Update(const aObject: T): Boolean;
 var
   LSQL: string;
@@ -269,34 +303,42 @@ var
   LProp: TRttiProperty;
   LAttr: TCustomAttribute;
   LCommand: TFDCommand;
+  LPrimaryKeyValue: TValue;
 begin
   Result := False;
-  LSQL := BuildUpdateSQL;
-
+  LSQL := BuildUpdateSQL(aObject);
   LCommand := TFDCommand.Create(nil);
   try
     LCommand.Connection := FConnection;
     LCommand.CommandText.Text := LSQL;
 
     LContext := TRttiContext.Create;
-    LType := LContext.GetType(T.ClassInfo);
-    for LProp in LType.GetProperties do
-    begin
-      for LAttr in LProp.GetAttributes do
+    try
+      LType := LContext.GetType(T.ClassInfo);
+      for LProp in LType.GetProperties do
       begin
-        if (LAttr is ColunaAttribute) and not (LAttr as ColunaAttribute).IsReadOnly and not (LAttr as ColunaAttribute).IsPrimaryKey then
+        for LAttr in LProp.GetAttributes do
         begin
-          LCommand.ParamByName((LAttr as ColunaAttribute).nome).Value := LProp.GetValue(aObject as TObject).AsVariant;
-        end;
-        if (LAttr is ColunaAttribute) and (LAttr as ColunaAttribute).IsPrimaryKey then
-        begin
-          LCommand.ParamByName((LAttr as ColunaAttribute).nome).Value := LProp.GetValue(aObject as TObject).AsVariant;
+          if LAttr is ColunaAttribute then
+          begin
+            // Vincula o parâmetro para a chave primária
+            if (LAttr as ColunaAttribute).IsPrimaryKey then
+            begin
+              LCommand.ParamByName((LAttr as ColunaAttribute).nome).Value := LProp.GetValue(aObject as TObject).AsVariant;
+            end
+            // Vincula o parâmetro para as outras colunas
+            else if not (LAttr as ColunaAttribute).IsReadOnly then
+            begin
+              LCommand.ParamByName((LAttr as ColunaAttribute).nome).Value := LProp.GetValue(aObject as TObject).AsVariant;
+            end;
+          end;
         end;
       end;
+      LCommand.Execute;
+      Result := True;
+    finally
+      LContext.Free;
     end;
-
-    LCommand.Execute;
-    Result := True;
   finally
     LCommand.Free;
   end;
@@ -324,6 +366,7 @@ begin
     LCommand.Free;
   end;
 end;
+
 
 function TBaseDAO<T>.FindById(const aId: Integer): T;
 var
@@ -406,6 +449,22 @@ begin
       Result.Add(LObject);
       LQuery.Next;
     end;
+  finally
+    LQuery.Free;
+  end;
+end;
+
+function TBaseDAO<T>.FindAllAsDataSet: TDataSet;
+var
+  LQuery: TFDQuery;
+begin
+  LQuery := TFDQuery.Create(nil);
+  try
+    LQuery.Connection := FConnection;
+    LQuery.SQL.Text := 'SELECT * FROM ' + GetTableName;
+    LQuery.Open;
+    Result := TFDMemTable.Create(nil);
+    TFDMemTable(Result).CloneCursor(LQuery, True, True);
   finally
     LQuery.Free;
   end;
