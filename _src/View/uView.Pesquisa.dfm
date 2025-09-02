@@ -21,7 +21,6 @@ object fPesquisa: TfPesquisa
     Height = 37
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 250
     object btnFechar: TBitBtn
       Left = 273
       Top = 7
@@ -63,10 +62,6 @@ object fPesquisa: TfPesquisa
       Align = alClient
       Caption = 'Pesquisar por: [NOME DO CAMPO]'
       TabOrder = 0
-      ExplicitLeft = 8
-      ExplicitTop = 0
-      ExplicitWidth = 185
-      ExplicitHeight = 103
       object EdtPesquisa: TEdit
         Left = 2
         Top = 17
@@ -81,9 +76,6 @@ object fPesquisa: TfPesquisa
         ParentFont = False
         TabOrder = 0
         OnChange = EdtPesquisaChange
-        ExplicitLeft = 6
-        ExplicitTop = 16
-        ExplicitWidth = 603
         ExplicitHeight = 29
       end
     end

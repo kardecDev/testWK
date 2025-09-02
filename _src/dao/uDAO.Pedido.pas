@@ -40,7 +40,17 @@ begin
   LQuery := TFDQuery.Create(nil);
   try
     LQuery.Connection := FConnection;
-    LQuery.SQL.Text := 'SELECT * FROM pedido_produtos WHERE numero_pedido = :numero_pedido';
+    LQuery.SQL.Text := 'SELECT i.codigo_produto '+
+                       '      ,p.descricao      '+
+                       '      ,i.numero_pedido  '+
+                       '      ,i.quantidade     '+
+                       '      ,i.vlr_unitario   '+
+                       '      ,i.vlr_total      '+
+                       '      ,i.id_produto     '+
+                       '  FROM db_pedidos.pedido_produtos i '+
+                       ' INNER '+
+                       '  JOIN db_pedidos.produtos p on p.codigo = i.codigo_produto '+
+                       ' WHERE numero_pedido = :numero_pedido';
     LQuery.ParamByName('numero_pedido').AsInteger := aNumero_Pedido;
     LQuery.Open;
 
@@ -49,12 +59,12 @@ begin
       // Mapeamento dos dados do DataSet para o objeto de modelo
       LItem := TPedidoProduto.Create;
       LItem.id_produto := LQuery.FieldByName('id_produto').AsInteger;
-      LItem.numero_pedido := LQuery.FieldByName('numero_pedido').AsInteger;
       LItem.codigo_produto := LQuery.FieldByName('codigo_produto').AsInteger;
+      LItem.Descricao := LQuery.FieldByName('descricao').AsString;
+      LItem.numero_pedido := LQuery.FieldByName('numero_pedido').AsInteger;
       LItem.quantidade := LQuery.FieldByName('quantidade').AsCurrency;
       LItem.vlr_unitario := LQuery.FieldByName('vlr_unitario').AsCurrency;
       LItem.vlr_total := LQuery.FieldByName('vlr_total').AsCurrency;
-
       Result.Add(LItem);
       LQuery.Next;
     end;

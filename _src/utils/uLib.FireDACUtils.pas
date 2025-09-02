@@ -29,7 +29,8 @@ begin
   else if (ARttiType.TypeKind = TTypeKind.tkEnumeration) and (ARttiType.ToString = 'TDateTime') then
     Result := ftDateTime
   else
-    Result := ftUnknown; // Tipo de dado desconhecido
+    Result := ftUnknown;
+
 end;
 
 

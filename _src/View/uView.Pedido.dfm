@@ -48,7 +48,7 @@
     Left = 0
     Top = 60
     Width = 884
-    Height = 120
+    Height = 91
     Align = alTop
     Color = 16506555
     ParentBackground = False
@@ -81,7 +81,7 @@
     end
     object Label1: TLabel
       Left = 80
-      Top = 76
+      Top = 55
       Width = 40
       Height = 15
       Caption = 'Cliente:'
@@ -97,6 +97,7 @@
       Top = 16
       Width = 137
       Height = 23
+      Enabled = False
       ReadOnly = True
       TabOrder = 0
     end
@@ -111,7 +112,7 @@
     end
     object edtCodigoCliente: TEdit
       Left = 136
-      Top = 73
+      Top = 52
       Width = 65
       Height = 23
       TabOrder = 2
@@ -120,7 +121,7 @@
     end
     object edtNomeCliente: TEdit
       Left = 207
-      Top = 73
+      Top = 52
       Width = 387
       Height = 23
       ReadOnly = True
@@ -128,7 +129,7 @@
     end
     object btnBuscarCliente: TBitBtn
       Left = 600
-      Top = 73
+      Top = 52
       Width = 97
       Height = 25
       Caption = 'Buscar Cliente'
@@ -138,13 +139,14 @@
   end
   object pnlAdicionarProduto: TPanel
     Left = 0
-    Top = 180
+    Top = 151
     Width = 884
     Height = 80
     Align = alTop
     Color = 16506555
     ParentBackground = False
     TabOrder = 2
+    ExplicitTop = 180
     object lblProduto: TLabel
       Left = 74
       Top = 16
@@ -198,8 +200,9 @@
       Top = 6
       Width = 387
       Height = 23
+      TabStop = False
       ReadOnly = True
-      TabOrder = 1
+      TabOrder = 4
     end
     object btnBuscarProduto: TBitBtn
       Left = 600
@@ -207,7 +210,7 @@
       Width = 97
       Height = 25
       Caption = 'Buscar Produto'
-      TabOrder = 2
+      TabOrder = 3
       OnClick = btnBuscarProdutoClick
     end
     object edtQuantidade: TEdit
@@ -215,15 +218,14 @@
       Top = 43
       Width = 65
       Height = 23
-      TabOrder = 3
+      TabOrder = 1
     end
     object edtValorUnitario: TEdit
       Left = 313
       Top = 43
       Width = 106
       Height = 23
-      ReadOnly = True
-      TabOrder = 4
+      TabOrder = 2
     end
     object btnAdicionarItem: TBitBtn
       Left = 428
@@ -237,9 +239,9 @@
   end
   object dbgItensPedido: TDBGrid
     Left = 0
-    Top = 260
+    Top = 231
     Width = 884
-    Height = 271
+    Height = 324
     Align = alClient
     Options = [dgTitles, dgIndicator, dgColumnResize, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
     TabOrder = 3
@@ -254,49 +256,63 @@
         Expanded = False
         FieldName = 'codigo_produto'
         Title.Caption = 'C'#243'digo Produto'
-        Width = 176
+        Width = 110
+        Visible = True
+      end
+      item
+        Expanded = False
+        FieldName = 'descricao'
+        Title.Caption = 'Descri'#231#227'o'
+        Width = 350
         Visible = True
       end
       item
         Expanded = False
         FieldName = 'quantidade'
         Title.Caption = 'Quantidade'
-        Width = 213
+        Width = 100
         Visible = True
       end
       item
         Expanded = False
         FieldName = 'vlr_unitario'
         Title.Caption = 'Vlr. Unit'#225'rio'
-        Width = 221
+        Width = 150
         Visible = True
       end
       item
         Expanded = False
         FieldName = 'vlr_total'
         Title.Caption = 'Vlr. Total'
-        Width = 254
+        Width = 150
         Visible = True
       end>
   end
   object pnlRodape: TPanel
     Left = 0
-    Top = 531
+    Top = 555
     Width = 884
-    Height = 80
+    Height = 56
     Align = alBottom
     TabOrder = 4
+    ExplicitTop = 556
     object lblTotalPedido: TLabel
-      Left = 640
-      Top = 32
-      Width = 69
-      Height = 15
+      Left = 542
+      Top = 17
+      Width = 100
+      Height = 21
       Caption = 'Total Pedido:'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = [fsBold]
+      ParentFont = False
     end
     object edtTotalPedido: TEdit
-      Left = 715
-      Top = 27
-      Width = 157
+      Left = 648
+      Top = 9
+      Width = 229
       Height = 38
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -308,28 +324,28 @@
       TabOrder = 0
     end
     object btnCarregar: TBitBtn
-      Left = 18
-      Top = 40
+      Left = 9
+      Top = 6
       Width = 120
-      Height = 25
+      Height = 45
       Caption = 'Carregar Pedido'
       TabOrder = 1
       OnClick = btnCarregarClick
     end
     object btnCancelar: TBitBtn
-      Left = 153
-      Top = 40
+      Left = 138
+      Top = 6
       Width = 120
-      Height = 25
+      Height = 45
       Caption = 'Cancelar Pedido'
       TabOrder = 2
       OnClick = btnCancelarClick
     end
     object btn_GrvarPedido: TBitBtn
-      Left = 496
-      Top = 40
+      Left = 413
+      Top = 6
       Width = 120
-      Height = 25
+      Height = 45
       Caption = 'Gravar Pedido'
       TabOrder = 3
       OnClick = btn_GrvarPedidoClick
@@ -360,6 +376,10 @@
     object mtItensPedidocodigo_produto: TIntegerField
       DisplayLabel = 'C'#243'digo Produto'
       FieldName = 'codigo_produto'
+    end
+    object mtItensPedidodescricao: TStringField
+      FieldName = 'descricao'
+      Size = 255
     end
     object mtItensPedidoquantidade: TFloatField
       DisplayLabel = 'Quantidade'

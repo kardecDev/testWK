@@ -37,7 +37,7 @@ type
     function CarregarPedido(const aNumero_Pedido: Integer): Boolean;
 
     // Métodos de manipulação do grid (itens do pedido)
-    procedure AdicionarItem(const aIdProduto: Integer; const aQuantidade: Currency; const aVlrUnitario: Currency);
+    procedure AdicionarItem(const aIdProduto: Integer; const aDescricao: string; const aQuantidade: Currency; const aVlrUnitario: Currency);
     procedure ExcluirItem(const aIndice: Integer);
 
     // Métodos para persistência (comunicação com a camada de serviço)
@@ -113,12 +113,13 @@ begin
   end;
 end;
 
-procedure TPedidoController.AdicionarItem(const aIdProduto: Integer; const aQuantidade: Currency; const aVlrUnitario: Currency);
+procedure TPedidoController.AdicionarItem(const aIdProduto: Integer; const aDescricao: string; const aQuantidade: Currency; const aVlrUnitario: Currency);
 var
   LItem: TPedidoProduto;
 begin
   LItem := TPedidoProduto.Create;
   LItem.codigo_produto := aIdProduto;
+  LItem.Descricao := aDescricao;
   LItem.quantidade := aQuantidade;
   LItem.vlr_unitario := aVlrUnitario;
   LItem.vlr_total := aQuantidade * aVlrUnitario;

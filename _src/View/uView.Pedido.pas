@@ -55,6 +55,7 @@ type
     mtItensPedidovlr_unitario: TCurrencyField;
     mtItensPedidovlr_total: TCurrencyField;
     mtItensPedidoquantidade: TFloatField;
+    mtItensPedidodescricao: TStringField;
     procedure FormShow(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure btn_GrvarPedidoClick(Sender: TObject);
@@ -134,14 +135,17 @@ var
   LIdProduto: Integer;
   LQuantidade: Currency;
   LValorUnitario: Currency;
+  LDescricao: String;
+
 begin
   // Tenta converter os valores dos campos
   if (TryStrToInt(edtCodigoProduto.Text, LIdProduto)) and
      (TryStrToCurr(edtQuantidade.Text, LQuantidade)) and
      (TryStrToCurr(edtValorUnitario.Text, LValorUnitario)) then
   begin
+    LDescricao := edtDescricaoProduto.text;
     // Chama o método do Controller para adicionar o item
-    FController.AdicionarItem(LIdProduto, LQuantidade, LValorUnitario);
+    FController.AdicionarItem(LIdProduto, LDescricao, LQuantidade, LValorUnitario);
 
     // A chamada a seguir, agora com o helper corrigido, irá abrir a tabela se ela estiver fechada.
     TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);

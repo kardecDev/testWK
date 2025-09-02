@@ -16,6 +16,7 @@ type
     Fquantidade: Currency;
     FvlrUnitario: Currency;
     FvlrTotal: Currency;
+    FDescricao: String;
   published
     [Coluna('id_produto', true, false, false)]
     property id_produto: Integer read FidProduto write FidProduto;
@@ -29,6 +30,7 @@ type
     property vlr_unitario: Currency read FvlrUnitario write FvlrUnitario;
     [Coluna('vlr_total')]
     property vlr_total: Currency read FvlrTotal write FvlrTotal;
+    property Descricao: string read FDescricao write FDescricao;
   end;
 
 implementation

@@ -22,7 +22,7 @@ uses
 type
   TDBConnection = class
   private
-    class var FConnection: TFDConnection; // Variável de classe para a única instância
+    class var FConnection: TFDConnection;
     class procedure SetConnection; static;
     class procedure ReleaseConnection; static;
   public
@@ -85,7 +85,7 @@ begin
 end;
 
 initialization
-  // Optional: You can add an initialization section to create the connection eagerly
+
 finalization
-  TDBConnection.ReleaseConnection; // Ensures connection is properly closed when the app exits
+  TDBConnection.ReleaseConnection;
 end.
