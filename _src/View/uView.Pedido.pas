@@ -56,6 +56,7 @@ type
     mtItensPedidovlr_total: TCurrencyField;
     mtItensPedidoquantidade: TFloatField;
     mtItensPedidodescricao: TStringField;
+    Label2: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure btn_GrvarPedidoClick(Sender: TObject);
@@ -143,6 +144,26 @@ begin
      (TryStrToCurr(edtQuantidade.Text, LQuantidade)) and
      (TryStrToCurr(edtValorUnitario.Text, LValorUnitario)) then
   begin
+
+    if LQuantidade <= 0 then
+    begin
+      MessageDlg('Digite uma quantidade válida. A quantidade deve ser um valor maior que 0.', mtInformation, [mbOK], 0);
+      abort;
+    end;
+
+    if LIdProduto <= 0  then
+    begin
+      MessageDlg('Digite um produto válido. O código do produto ser menor ou igual a 0.', mtInformation, [mbOK], 0);
+      abort;
+    end;
+
+    if LValorUnitario <= 0  then
+    begin
+      MessageDlg('Digite um valor unitário válido. O valor unitário do produto ser maior que 0.', mtInformation, [mbOK], 0);
+      abort;
+    end;
+
+
     LDescricao := edtDescricaoProduto.text;
     // Chama o método do Controller para adicionar o item
     FController.AdicionarItem(LIdProduto, LDescricao, LQuantidade, LValorUnitario);
@@ -363,6 +384,8 @@ end;
 procedure TfPedido.FormShow(Sender: TObject);
 begin
   prc_checa_btn;
+  dtpDataEmissao.Date := Date;
+  edtCodigoCliente.SetFocus;
 end;
 
 procedure TfPedido.LimparCamposProduto;

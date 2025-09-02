@@ -70,6 +70,7 @@ var
 begin
   FConnection.StartTransaction;
   try
+
     if aPedido.numero_pedido = 0 then
       FDaoPedido.Insert(aPedido)
     else
@@ -92,6 +93,7 @@ begin
     FConnection.Rollback;
     Result := False;
   end;
+
 end;
 
 function TPedidoService.CarregarItensDoPedido(

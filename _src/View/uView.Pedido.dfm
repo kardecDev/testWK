@@ -82,9 +82,9 @@
     object Label1: TLabel
       Left = 80
       Top = 55
-      Width = 40
+      Width = 48
       Height = 15
-      Caption = 'Cliente:'
+      Caption = 'Cliente: *'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = 2171169
       Font.Height = -12
@@ -146,13 +146,12 @@
     Color = 16506555
     ParentBackground = False
     TabOrder = 2
-    ExplicitTop = 180
     object lblProduto: TLabel
       Left = 74
       Top = 16
-      Width = 46
+      Width = 54
       Height = 15
-      Caption = 'Produto:'
+      Caption = 'Produto: *'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = 2171169
       Font.Height = -12
@@ -163,9 +162,9 @@
     object lblQuantidade: TLabel
       Left = 55
       Top = 48
-      Width = 65
+      Width = 73
       Height = 15
-      Caption = 'Quantidade:'
+      Caption = 'Quantidade: *'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = 2171169
       Font.Height = -12
@@ -176,9 +175,9 @@
     object lblValorUnitario: TLabel
       Left = 233
       Top = 48
-      Width = 74
+      Width = 82
       Height = 15
-      Caption = 'Valor Unit'#225'rio:'
+      Caption = 'Valor Unit'#225'rio: *'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = 2171169
       Font.Height = -12
@@ -221,14 +220,14 @@
       TabOrder = 1
     end
     object edtValorUnitario: TEdit
-      Left = 313
+      Left = 325
       Top = 43
       Width = 106
       Height = 23
       TabOrder = 2
     end
     object btnAdicionarItem: TBitBtn
-      Left = 428
+      Left = 440
       Top = 44
       Width = 97
       Height = 25
@@ -241,7 +240,7 @@
     Left = 0
     Top = 231
     Width = 884
-    Height = 324
+    Height = 302
     Align = alClient
     Options = [dgTitles, dgIndicator, dgColumnResize, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
     TabOrder = 3
@@ -290,12 +289,12 @@
   end
   object pnlRodape: TPanel
     Left = 0
-    Top = 555
+    Top = 533
     Width = 884
-    Height = 56
+    Height = 78
     Align = alBottom
     TabOrder = 4
-    ExplicitTop = 556
+    ExplicitTop = 534
     object lblTotalPedido: TLabel
       Left = 542
       Top = 17
@@ -308,6 +307,13 @@
       Font.Name = 'Segoe UI'
       Font.Style = [fsBold]
       ParentFont = False
+    end
+    object Label2: TLabel
+      Left = 13
+      Top = 58
+      Width = 247
+      Height = 15
+      Caption = '* Indica campos de preenchimento obrigat'#243'rio'
     end
     object edtTotalPedido: TEdit
       Left = 648
