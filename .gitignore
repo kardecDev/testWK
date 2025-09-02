@@ -21,7 +21,6 @@
 *.~?~
 
 # Outros arquivos gerados pelo ambiente de desenvolvimento ou que devem ser ignorados
-bin/
 debug/
 release/
 project/
