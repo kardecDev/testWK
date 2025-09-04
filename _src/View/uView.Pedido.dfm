@@ -294,7 +294,6 @@
     Height = 78
     Align = alBottom
     TabOrder = 4
-    ExplicitTop = 534
     object lblTotalPedido: TLabel
       Left = 542
       Top = 17

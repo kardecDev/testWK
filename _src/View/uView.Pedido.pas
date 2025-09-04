@@ -12,8 +12,6 @@ uses
   FireDAC.DApt.Intf, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
   // imports
   uController.Pedido,
-  uModel.Cliente,
-  uModel.Produto,
   uFDMemTableHelper;
 
 
@@ -425,17 +423,16 @@ end;
 procedure TfPedido.ValidarCliente(Sender: TObject);
 var
   LIdCliente: Integer;
-  LCliente: TCliente;
+  LNome: String;
 begin
   if not (trim(edtCodigoCliente.Text) = EmptyStr) then
   begin
     if TryStrToInt(edtCodigoCliente.Text, LIdCliente) then
     begin
-      LCliente := FController.BuscarClientePorId(LIdCliente);
-      if Assigned(LCliente) then
+      LNome := FController.BuscarClientePorId(LIdCliente).nome;
+      if LNome <> EmptyStr then
       begin
-        edtNomeCliente.Text := LCliente.nome;
-        LCliente.Free;
+        edtNomeCliente.Text := LNome;
       end
       else
       begin
@@ -463,18 +460,19 @@ end;
 procedure TfPedido.ValidarProduto(Sender: TObject);
 var
   LIdProduto: Integer;
-  LProduto: TProduto;
+  LDescricao: String;
+  LPrecoVenda: Currency;
 begin
   if not (trim(edtCodigoProduto.Text) = EmptyStr) then
   begin
     if TryStrToInt(edtCodigoProduto.Text, LIdProduto) then
     begin
-      LProduto := FController.BuscarProdutoPorId(LIdProduto);
-      if Assigned(LProduto) then
+      LDescricao := FController.BuscarProdutoPorId(LIdProduto).descricao;
+      LPrecoVenda := FController.BuscarProdutoPorId(LIdProduto).preco_venda;
+      if LDescricao <> EmptyStr then
       begin
-        edtDescricaoProduto.Text := LProduto.descricao;
-        edtValorUnitario.Text := FloatToStr(LProduto.preco_venda);
-        LProduto.Free;
+        edtDescricaoProduto.Text := LDescricao;
+        edtValorUnitario.Text := FloatToStr(LPrecoVenda);
       end
       else
       begin
