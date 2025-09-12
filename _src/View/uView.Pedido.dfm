@@ -14,6 +14,7 @@
   Font.Style = []
   Position = poScreenCenter
   OnActivate = FormActivate
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
@@ -60,7 +61,7 @@
       Height = 15
       Caption = 'N'#250'mero do Pedido:'
       Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
+      Font.Color = clBlack
       Font.Height = -12
       Font.Name = 'Segoe UI'
       Font.Style = []
@@ -124,6 +125,7 @@
       Top = 52
       Width = 387
       Height = 23
+      TabStop = False
       ReadOnly = True
       TabOrder = 3
     end
@@ -134,6 +136,7 @@
       Height = 25
       Caption = 'Buscar Cliente'
       TabOrder = 4
+      TabStop = False
       OnClick = btnBuscarClienteClick
     end
   end
@@ -201,7 +204,7 @@
       Height = 23
       TabStop = False
       ReadOnly = True
-      TabOrder = 4
+      TabOrder = 1
     end
     object btnBuscarProduto: TBitBtn
       Left = 600
@@ -209,7 +212,8 @@
       Width = 97
       Height = 25
       Caption = 'Buscar Produto'
-      TabOrder = 3
+      TabOrder = 5
+      TabStop = False
       OnClick = btnBuscarProdutoClick
     end
     object edtQuantidade: TEdit
@@ -217,22 +221,22 @@
       Top = 43
       Width = 65
       Height = 23
-      TabOrder = 1
+      TabOrder = 2
     end
     object edtValorUnitario: TEdit
       Left = 325
       Top = 43
       Width = 106
       Height = 23
-      TabOrder = 2
+      TabOrder = 3
     end
     object btnAdicionarItem: TBitBtn
       Left = 440
-      Top = 44
+      Top = 43
       Width = 97
       Height = 25
       Caption = 'Adicionar'
-      TabOrder = 5
+      TabOrder = 4
       OnClick = btnAdicionarItemClick
     end
   end
@@ -252,8 +256,10 @@
     OnKeyDown = dbgItensPedidoKeyDown
     Columns = <
       item
+        Alignment = taRightJustify
         Expanded = False
         FieldName = 'codigo_produto'
+        Title.Alignment = taCenter
         Title.Caption = 'C'#243'digo Produto'
         Width = 110
         Visible = True
@@ -261,27 +267,34 @@
       item
         Expanded = False
         FieldName = 'descricao'
+        Title.Alignment = taCenter
         Title.Caption = 'Descri'#231#227'o'
-        Width = 350
+        Width = 330
         Visible = True
       end
       item
+        Alignment = taRightJustify
         Expanded = False
         FieldName = 'quantidade'
+        Title.Alignment = taRightJustify
         Title.Caption = 'Quantidade'
         Width = 100
         Visible = True
       end
       item
+        Alignment = taRightJustify
         Expanded = False
         FieldName = 'vlr_unitario'
+        Title.Alignment = taRightJustify
         Title.Caption = 'Vlr. Unit'#225'rio'
         Width = 150
         Visible = True
       end
       item
+        Alignment = taRightJustify
         Expanded = False
         FieldName = 'vlr_total'
+        Title.Alignment = taRightJustify
         Title.Caption = 'Vlr. Total'
         Width = 150
         Visible = True
@@ -319,6 +332,8 @@
       Top = 9
       Width = 229
       Height = 38
+      TabStop = False
+      Alignment = taRightJustify
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -21
@@ -326,10 +341,10 @@
       Font.Style = [fsBold]
       ParentFont = False
       ReadOnly = True
-      TabOrder = 0
+      TabOrder = 4
     end
     object btnCarregar: TBitBtn
-      Left = 9
+      Left = 148
       Top = 6
       Width = 120
       Height = 45
@@ -338,7 +353,7 @@
       OnClick = btnCarregarClick
     end
     object btnCancelar: TBitBtn
-      Left = 138
+      Left = 281
       Top = 6
       Width = 120
       Height = 45
@@ -346,14 +361,23 @@
       TabOrder = 2
       OnClick = btnCancelarClick
     end
-    object btn_GrvarPedido: TBitBtn
+    object btnGrvarPedido: TBitBtn
       Left = 413
       Top = 6
       Width = 120
       Height = 45
       Caption = 'Gravar Pedido'
       TabOrder = 3
-      OnClick = btn_GrvarPedidoClick
+      OnClick = btnGrvarPedidoClick
+    end
+    object btnNovoPedido: TBitBtn
+      Left = 16
+      Top = 6
+      Width = 120
+      Height = 45
+      Caption = 'Novo Pedido'
+      TabOrder = 0
+      OnClick = btnNovoPedidoClick
     end
   end
   object dsItensPedido: TDataSource
@@ -397,6 +421,10 @@
     object mtItensPedidovlr_total: TCurrencyField
       DisplayLabel = 'Vlr. Total'
       FieldName = 'vlr_total'
+    end
+    object mtItensPedidoUID: TStringField
+      FieldName = 'UID'
+      Size = 100
     end
   end
 end

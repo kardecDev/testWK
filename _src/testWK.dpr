@@ -27,7 +27,6 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.Title := 'Pedido de Vendas';
-  TStyleManager.TrySetStyle('Aqua Graphite');
   Application.CreateForm(TfPedido, fPedido);
   Application.Run;
 end.

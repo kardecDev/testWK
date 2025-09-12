@@ -17,6 +17,9 @@ type
     FvlrUnitario: Currency;
     FvlrTotal: Currency;
     FDescricao: String;
+    FUID: string;
+  public
+     constructor Create; overload;
   published
     [Coluna('id_produto', true, false, false)]
     property id_produto: Integer read FidProduto write FidProduto;
@@ -31,8 +34,20 @@ type
     [Coluna('vlr_total')]
     property vlr_total: Currency read FvlrTotal write FvlrTotal;
     property Descricao: string read FDescricao write FDescricao;
+    property UID: string read FUID write FUID;
   end;
 
 implementation
+
+{ TPedidoProduto }
+
+constructor TPedidoProduto.Create;
+var
+  G: TGUID;
+begin
+  inherited Create;
+  CreateGUID(G);
+  FUID := Copy(GUIDToString(G), 2, 36);
+end;
 
 end.

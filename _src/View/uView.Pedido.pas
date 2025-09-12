@@ -16,6 +16,7 @@ uses
 
 
 type
+
   TfPedido = class(TForm)
     dsItensPedido: TDataSource;
     pnlTopo: TPanel;
@@ -45,7 +46,7 @@ type
     edtTotalPedido: TEdit;
     btnCarregar: TBitBtn;
     btnCancelar: TBitBtn;
-    btn_GrvarPedido: TBitBtn;
+    btnGrvarPedido: TBitBtn;
     mtItensPedido: TFDMemTable;
     mtItensPedidoid_produto: TIntegerField;
     mtItensPedidonumero_pedido: TIntegerField;
@@ -55,9 +56,11 @@ type
     mtItensPedidoquantidade: TFloatField;
     mtItensPedidodescricao: TStringField;
     Label2: TLabel;
+    btnNovoPedido: TBitBtn;
+    mtItensPedidoUID: TStringField;
     procedure FormShow(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-    procedure btn_GrvarPedidoClick(Sender: TObject);
+    procedure btnGrvarPedidoClick(Sender: TObject);
     procedure edtCodigoClienteChange(Sender: TObject);
     procedure edtCodigoClienteExit(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -71,11 +74,13 @@ type
     procedure btnBuscarClienteClick(Sender: TObject);
     procedure btnBuscarProdutoClick(Sender: TObject);
     procedure edtCodigoProdutoChange(Sender: TObject);
+    procedure btnNovoPedidoClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FController : TPedidoController;
-    function fnc_estado_btn: boolean;
     procedure prc_checa_btn;
+    procedure LimparCamposPedido;
     procedure LimparCamposProduto;
     procedure AtualizarValorTotal;
     procedure ValidarProduto(Sender: TObject);
@@ -87,7 +92,8 @@ type
 
 var
   fPedido: TfPedido;
-
+  FOperacaoPedido: TOperacaoPedido;
+  FOperacaoItem: TOperacaoItem;
 implementation
 
 uses
@@ -101,7 +107,7 @@ begin
   edtTotalPedido.Text := FormatFloat('R$ #,##0.00', FController.Pedido.valor_total);
 end;
 
-procedure TfPedido.btn_GrvarPedidoClick(Sender: TObject);
+procedure TfPedido.btnGrvarPedidoClick(Sender: TObject);
 var
   LIdPedido, LIdCliente: Integer;
 begin
@@ -121,6 +127,7 @@ begin
   begin
     ShowMessage('Pedido salvo com sucesso!');
     CarregarDadosDaTela;
+    FOperacaoPedido := opPedidoBrowse;
   end
   else
   begin
@@ -131,17 +138,21 @@ end;
 
 procedure TfPedido.btnAdicionarItemClick(Sender: TObject);
 var
-  LIdProduto: Integer;
+  LUID: string;
+  LCodigoProduto: Integer;
   LQuantidade: Currency;
   LValorUnitario: Currency;
   LDescricao: String;
-
 begin
   // Tenta converter os valores dos campos
-  if (TryStrToInt(edtCodigoProduto.Text, LIdProduto)) and
+  if (TryStrToInt(edtCodigoProduto.Text, LCodigoProduto)) and
      (TryStrToCurr(edtQuantidade.Text, LQuantidade)) and
      (TryStrToCurr(edtValorUnitario.Text, LValorUnitario)) then
   begin
+    FOperacaoPedido:= opPedidoEdit;
+    prc_checa_btn;
+
+    LUID := mtItensPedidoUID.AsString;
 
     if LQuantidade <= 0 then
     begin
@@ -149,7 +160,7 @@ begin
       abort;
     end;
 
-    if LIdProduto <= 0  then
+    if LCodigoProduto <= 0  then
     begin
       MessageDlg('Digite um produto válido. O código do produto ser menor ou igual a 0.', mtInformation, [mbOK], 0);
       abort;
@@ -161,14 +172,12 @@ begin
       abort;
     end;
 
-
     LDescricao := edtDescricaoProduto.text;
     // Chama o método do Controller para adicionar o item
-    FController.AdicionarItem(LIdProduto, LDescricao, LQuantidade, LValorUnitario);
+    FController.AdicionarItem(FOperacaoItem,LUID, LCodigoProduto, LDescricao, LQuantidade, LValorUnitario);
 
     // A chamada a seguir, agora com o helper corrigido, irá abrir a tabela se ela estiver fechada.
     TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
-
 
     // Recalcula o valor total do pedido
     AtualizarValorTotal;
@@ -228,22 +237,35 @@ begin
     // Tenta converter a entrada do usuário para um número
     if TryStrToInt(LIdPedidoStr, LIdPedido) then
     begin
+      //Verifica se pedido existe
+      if not FController.CarregarPedido(LIdPedido) then
+      begin
+        ShowMessage('Pedido: '+ IntToStr(LIdPedido) +' não foi encontrado.');
+        abort
+      end;
+
       // Chama o Controller para excluir o pedido
       if FController.ExcluirPedido(LIdPedido) then
       begin
         ShowMessage('Pedido ' + LIdPedidoStr + ' cancelado (excluído) com sucesso!');
         // Prepara o formulário para um novo pedido após o sucesso
-        FController.NovoPedido;
-        CarregarDadosDaTela;
+        FOperacaoPedido := opPedidoBrowse;
+        prc_checa_btn;
+        LimparCamposPedido;
+
       end
       else
       begin
         ShowMessage('Falha ao cancelar o pedido. Verifique se o Número do pedido está correto.');
+        FOperacaoPedido := opPedidoBrowse;
+        prc_checa_btn;
       end;
     end
     else
     begin
       ShowMessage('Número do pedido do pedido inválido.');
+      FOperacaoPedido := opPedidoBrowse;
+      prc_checa_btn;
     end;
   end;
 end;
@@ -263,23 +285,38 @@ begin
       // Chama o Controller para carregar o pedido
       FController.CarregarPedido(LIdPedido);
 
-      // Preenche o formulário com os dados do pedido carregado
-      CarregarDadosDaTela;
-
-
       // Verifica se o pedido foi realmente encontrado
       if FController.Pedido.numero_pedido = 0 then
       begin
+        FOperacaoPedido := opPedidoBrowse;
+        prc_checa_btn;
+        edtCodigoCliente.clear;
         ShowMessage('Pedido não encontrado.');
-        FController.NovoPedido;
-        CarregarDadosDaTela;
+        Abort;
       end;
+      // Preenche o formulário com os dados do pedido carregado
+      CarregarDadosDaTela;
+      FOperacaoPedido := opPedidoEdit;
+      prc_checa_btn;
     end
     else
     begin
+      FOperacaoPedido := opPedidoBrowse;
       ShowMessage('ID do pedido inválido.');
+      edtCodigoCliente.clear;
+      prc_checa_btn;
     end;
   end;
+end;
+
+procedure TfPedido.btnNovoPedidoClick(Sender: TObject);
+begin
+  FController.NovoPedido;
+  LimparCamposPedido;
+  // Atualiza o ClientDataSet a partir da lista
+  TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
+  FOperacaoPedido:= opPedidoInsert;
+  prc_checa_btn;
 end;
 
 procedure TfPedido.dbgItensPedidoKeyDown(Sender: TObject; var Key: Word;
@@ -297,9 +334,14 @@ begin
       LIndex := mtItensPedido.RecNo - 1;
 
       // Exclui o item no Controller usando o índice correto
-      if MessageDlg('Tem certeza que deseja remover o produto: ' + mtItensPedido.FieldByName('CODIGO_PRODUTO').AsString + ' da lista de itens do pedido ?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+      if MessageDlg('Tem certeza que deseja remover o produto: ' +
+                     mtItensPedido.FieldByName('CODIGO_PRODUTO').AsString + ' - ' +
+                     mtItensPedido.FieldByName('DESCRICAO').AsString +
+                     ' da lista de itens do pedido ?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
       begin
+        FOperacaoPedido := opPedidoEdit;
         FController.ExcluirItem(LIndex);
+        prc_checa_btn;
       end;
       // Atualiza o ClientDataSet a partir da lista
       TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
@@ -312,18 +354,13 @@ begin
   // Lógica para EDITAR um item
   if (Key = VK_RETURN) and not mtItensPedido.IsEmpty then
   begin
+    FOperacaoItem := opEdit;
     // Preenche os campos de edição com os dados da linha selecionada
     edtCodigoProduto.Text := mtItensPedido.FieldByName('codigo_produto').AsString;
-    edtDescricaoProduto.Text := 'Nome do Produto'; // Este campo ainda não está no ClientDataSet
+    edtDescricaoProduto.Text := mtItensPedido.FieldByName('descricao').AsString;
     edtQuantidade.Text := mtItensPedido.FieldByName('quantidade').AsString;
     edtValorUnitario.Text := mtItensPedido.FieldByName('vlr_unitario').AsString;
-
-    // Remove o item da lista (para que ele possa ser adicionado novamente com as alterações)
-    FController.ExcluirItem(mtItensPedido.RecNo - 1);
-
-    // Atualiza o ClientDataSet e o valor total
-    TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
-    AtualizarValorTotal;
+    edtCodigoProduto.SetFocus;
   end;
 end;
 
@@ -341,7 +378,7 @@ end;
 procedure TfPedido.edtCodigoProdutoChange(Sender: TObject);
 begin
   if trim(edtCodigoProduto.Text)=EmptyStr then
-     edtNomeCliente.clear;
+     edtDescricaoProduto.clear;
 end;
 
 procedure TfPedido.edtCodigoProdutoExit(Sender: TObject);
@@ -349,29 +386,33 @@ begin
   ValidarProduto(Sender);
 end;
 
-function TfPedido.fnc_estado_btn: boolean;
-var
- estado : boolean;
-begin
-  estado := false;
-  if (edtCodigoCliente.Text = EmptyStr) then
-     estado := true;
-  result := estado;
-end;
 
 procedure TfPedido.FormActivate(Sender: TObject);
 begin
   prc_checa_btn;
 end;
 
+procedure TfPedido.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  if btnGrvarPedido.Enabled then
+  begin
+     if MessageDlg('Você ainda não gravou as alterações realizadas no pedido. ' +
+                   'Deseja sair mesmo assim ?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+        Exit
+     else
+       abort;
+  end;
+
+end;
+
 procedure TfPedido.FormCreate(Sender: TObject);
 begin
   FController := TPedidoController.Create;
- // Apenas configura a ligação entre o DataSource e a MemTable
+  // Apenas configura a ligação entre o DataSource e a MemTable
   dsItensPedido.DataSet := mtItensPedido;
   dbgItensPedido.DataSource := dsItensPedido;
-  // Prepara o Controller para um novo pedido.
-  FController.NovoPedido;
+  FOperacaoPedido:= opPedidoBrowse;
+  prc_checa_btn;
 end;
 
 procedure TfPedido.FormDestroy(Sender: TObject);
@@ -383,6 +424,15 @@ procedure TfPedido.FormShow(Sender: TObject);
 begin
   prc_checa_btn;
   dtpDataEmissao.Date := Date;
+end;
+
+procedure TfPedido.LimparCamposPedido;
+begin
+  edtNumeroPedido.Clear;
+  edtCodigoCliente.Clear;
+  edtNomeCliente.Clear;
+  edtTotalPedido.Clear;
+  LimparCamposProduto;
   edtCodigoCliente.SetFocus;
 end;
 
@@ -392,12 +442,16 @@ begin
   edtDescricaoProduto.Clear;
   edtQuantidade.Clear;
   edtValorUnitario.Clear;
+  edtCodigoProduto.SetFocus;
+  FOperacaoItem:= opInsert;
 end;
 
 procedure TfPedido.prc_checa_btn;
 begin
-  btnCarregar.Visible := fnc_estado_btn;
-  btnCancelar.Visible := fnc_estado_btn;
+  btnNovoPedido.Enabled := not (FOperacaoPedido in [opPedidoInsert, opPedidoEdit]);
+  btnGrvarPedido.Enabled := not btnNovoPedido.Enabled;
+  btnCarregar.Enabled := btnNovoPedido.Enabled;
+  btnCancelar.Enabled := btnNovoPedido.Enabled;
 end;
 
 procedure TfPedido.CarregarDadosDaTela;

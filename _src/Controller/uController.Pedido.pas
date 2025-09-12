@@ -20,6 +20,9 @@ uses
   uDBConnection;
 
 type
+  TOperacaoItem=(opInsert=0, opEdit=1, opDelete=2, opBrowse=3);
+  TOperacaoPedido=(opPedidoInsert=0,opPedidoEdit=1,opPedidoDelete=2, opPedidoBrowse=3);
+
   TPedidoController = class
   private
     FConnection: TDBConnection;
@@ -37,7 +40,7 @@ type
     function CarregarPedido(const aNumero_Pedido: Integer): Boolean;
 
     // Métodos de manipulação do grid (itens do pedido)
-    procedure AdicionarItem(const aIdProduto: Integer; const aDescricao: string; const aQuantidade: Currency; const aVlrUnitario: Currency);
+    procedure AdicionarItem(const aOperacao:TOperacaoItem; const aUID: string; const aCodigoProduto: Integer; const aDescricao: string; const aQuantidade: Currency; const aVlrUnitario: Currency);
     procedure ExcluirItem(const aIndice: Integer);
 
     // Métodos para persistência (comunicação com a camada de serviço)
@@ -113,18 +116,45 @@ begin
   end;
 end;
 
-procedure TPedidoController.AdicionarItem(const aIdProduto: Integer; const aDescricao: string; const aQuantidade: Currency; const aVlrUnitario: Currency);
+procedure TPedidoController.AdicionarItem(const aOperacao:TOperacaoItem; const aUID: string; const aCodigoProduto: Integer; const aDescricao: string; const aQuantidade: Currency; const aVlrUnitario: Currency);
 var
   LItem: TPedidoProduto;
+  LIndice: Integer;
 begin
-  LItem := TPedidoProduto.Create;
-  LItem.codigo_produto := aIdProduto;
-  LItem.Descricao := aDescricao;
-  LItem.quantidade := aQuantidade;
-  LItem.vlr_unitario := aVlrUnitario;
-  LItem.vlr_total := aQuantidade * aVlrUnitario;
-  FItensPedido.Add(LItem);
-  FPedido.valor_total := FService.CalcularValorTotal(FItensPedido) ;
+  LItem := nil;
+  case aOperacao of
+    opInsert:begin
+               // Se não existe, cria e adiciona
+               LItem := TPedidoProduto.Create;
+               LItem.codigo_produto := aCodigoProduto;
+               LItem.Descricao      := aDescricao;
+               LItem.quantidade     := aQuantidade;
+               LItem.vlr_unitario   := aVlrUnitario;
+               LItem.vlr_total      := aQuantidade * aVlrUnitario;
+               FItensPedido.Add(LItem);
+             end ;
+    opEdit: begin
+              // Verifica se o produto já existe na lista
+              for LIndice := 0 to FItensPedido.Count - 1 do
+              begin
+                if FItensPedido[LIndice].UID = aUID then
+                begin
+                  LItem := FItensPedido[LIndice];
+                  Break;
+                end;
+              end;
+
+              if Assigned(LItem) then
+              begin
+                // Se já existe, atualiza os valores
+                LItem.Descricao   := aDescricao;
+                LItem.quantidade  := aQuantidade;
+                LItem.vlr_unitario := aVlrUnitario;
+                LItem.vlr_total   := aQuantidade * aVlrUnitario;
+              end
+            end;
+  end;
+  FPedido.valor_total := FService.CalcularValorTotal(FItensPedido);
 end;
 
 procedure TPedidoController.ExcluirItem(const aIndice: Integer);
