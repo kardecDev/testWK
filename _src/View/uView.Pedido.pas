@@ -76,6 +76,7 @@ type
     procedure edtCodigoProdutoChange(Sender: TObject);
     procedure btnNovoPedidoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure dtpDataEmissaoChange(Sender: TObject);
   private
     { Private declarations }
     FController : TPedidoController;
@@ -249,16 +250,18 @@ begin
       begin
         ShowMessage('Pedido ' + LIdPedidoStr + ' cancelado (excluído) com sucesso!');
         // Prepara o formulário para um novo pedido após o sucesso
+        LimparCamposPedido;
+        TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
         FOperacaoPedido := opPedidoBrowse;
         prc_checa_btn;
-        LimparCamposPedido;
-
       end
       else
       begin
         ShowMessage('Falha ao cancelar o pedido. Verifique se o Número do pedido está correto.');
         FOperacaoPedido := opPedidoBrowse;
         prc_checa_btn;
+        LimparCamposPedido;
+        TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
       end;
     end
     else
@@ -266,6 +269,8 @@ begin
       ShowMessage('Número do pedido do pedido inválido.');
       FOperacaoPedido := opPedidoBrowse;
       prc_checa_btn;
+      LimparCamposPedido;
+      TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
     end;
   end;
 end;
@@ -296,13 +301,16 @@ begin
       end;
       // Preenche o formulário com os dados do pedido carregado
       CarregarDadosDaTela;
-      FOperacaoPedido := opPedidoEdit;
+      FOperacaoPedido := opPedidoBrowse;
       prc_checa_btn;
+      TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
     end
     else
     begin
       FOperacaoPedido := opPedidoBrowse;
       ShowMessage('ID do pedido inválido.');
+      LimparCamposPedido;
+      TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
       edtCodigoCliente.clear;
       prc_checa_btn;
     end;
@@ -311,8 +319,10 @@ end;
 
 procedure TfPedido.btnNovoPedidoClick(Sender: TObject);
 begin
-  FController.NovoPedido;
   LimparCamposPedido;
+  dtpDataEmissao.DateTime := now;
+  FController.NovoPedido;
+
   // Atualiza o ClientDataSet a partir da lista
   TFDMemTableHelper.BindList(TObjectList<TObject>(FController.ItensPedido), mtItensPedido);
   FOperacaoPedido:= opPedidoInsert;
@@ -364,8 +374,15 @@ begin
   end;
 end;
 
+procedure TfPedido.dtpDataEmissaoChange(Sender: TObject);
+begin
+  FOperacaoPedido:=opPedidoEdit;
+  prc_checa_btn;
+end;
+
 procedure TfPedido.edtCodigoClienteChange(Sender: TObject);
 begin
+  FOperacaoPedido:=opPedidoEdit;
   prc_checa_btn;
 end;
 
@@ -458,7 +475,7 @@ procedure TfPedido.CarregarDadosDaTela;
 begin
   // Carrega os dados do cabeçalho do pedido do Controller
   edtNumeroPedido.Text := IntToStr(FController.Pedido.numero_pedido);
-  dtpDataEmissao.Date := FController.Pedido.data_emissao;
+  dtpDataEmissao.DateTime:= FController.Pedido.data_emissao;
   edtCodigoCliente.Text := IntToStr(FController.Pedido.codigo_cliente);
 
   // Preenche o nome do cliente se o código for válido

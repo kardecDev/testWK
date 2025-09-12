@@ -110,6 +110,7 @@
       Date = 45899.000000000000000000
       Time = 0.727017858793260500
       TabOrder = 1
+      OnChange = dtpDataEmissaoChange
     end
     object edtCodigoCliente: TEdit
       Left = 136

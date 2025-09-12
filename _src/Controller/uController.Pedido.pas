@@ -182,8 +182,13 @@ begin
 end;
 
 function TPedidoController.ExcluirPedido(const aId: Integer): Boolean;
+var
+  lExcluiu: Boolean;
 begin
-  Result := FService.Excluir(aId);
+  lExcluiu := FService.Excluir(aId);
+  if lExcluiu then
+     FItensPedido.Clear;
+  Result := lExcluiu;
 end;
 
 function TPedidoController.FindAllClientes: TDataSet;
